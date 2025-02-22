@@ -1,151 +1,81 @@
 import streamlit as st
 import pandas as pd
-import math
-from pathlib import Path
+import matplotlib.pyplot as plt
+import time
+from datetime import datetime
 
-# Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
-)
+# Load dummy dataset
+data = {
+    "Employee ID": [101, 102, 103, 104, 105],
+    "Name": ["Alice", "Bob", "Charlie", "David", "Emma"],
+    "Work Hours": [8, 7, 9, 6, 10],
+    "Breaks Taken": [2, 3, 1, 4, 2],
+    "Screen Time (hrs)": [6, 5, 7, 4, 8],
+    "Tasks Completed": [5, 6, 4, 7, 3],
+    "Stress Level": ["Low", "Medium", "High", "Low", "High"]
+}
+df = pd.DataFrame(data)
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+# App title
+st.title("GraniteFit AI 🏋️‍♂️🤖 - Employee Health & Wellness Dashboard")
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+# Sidebar Navigation
+st.sidebar.header("Navigation")
+option = st.sidebar.radio("Go to", ["Home", "Employee Dashboard", "Break Reminders", "Screen Time Tracker", "Task Prioritization", "Mental Wellness Bot"])
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+# Employee Dashboard
+if option == "Employee Dashboard":
+    st.header("📊 Employee Health Dashboard")
+    selected_employee = st.selectbox("Select an Employee", df["Name"].unique())
+    emp_data = df[df["Name"] == selected_employee]
+    
+    st.write(emp_data)
+    
+    fig, ax = plt.subplots()
+    ax.bar(emp_data.columns[2:6], emp_data.iloc[0, 2:6])
+    plt.xticks(rotation=45)
+    st.pyplot(fig)
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+# 1️⃣ Break Reminders
+elif option == "Break Reminders":
+    st.header("⏰ Sitting Too Long? Get a Reminder!")
+    duration = st.number_input("Set work duration before a reminder (minutes)", min_value=10, max_value=120, value=60)
+    if st.button("Start Timer"):
+        st.success(f"Reminder set! You will be notified every {duration} minutes.")
+        time.sleep(duration * 60)
+        st.warning("Time to stand up, stretch, or drink some water! 💦")
 
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
+# 2️⃣ Screen Time Tracker
+elif option == "Screen Time Tracker":
+    st.header("👀 Screen Brightness & Time Tracker")
+    screen_time = st.number_input("Enter your daily screen time (hours)", min_value=1, max_value=16, value=6)
+    if screen_time > 8:
+        st.warning("⚠️ High screen time detected! Consider reducing screen exposure.")
+    st.success("Try the 20-20-20 rule: Every 20 minutes, look at something 20 feet away for 20 seconds.")
 
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
+# 3️⃣ AI Task Prioritization
+elif option == "Task Prioritization":
+    st.header("⚖️ Work-Life Balance - AI Task Manager")
+    tasks = st.text_area("Enter your tasks (one per line)")
+    if st.button("Prioritize Tasks"):
+        task_list = tasks.split("\n")
+        sorted_tasks = sorted(task_list, key=len)
+        st.success("Here’s your optimized task order:")
+        for i, task in enumerate(sorted_tasks, 1):
+            st.write(f"{i}. {task}")
 
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
+# 4️⃣ Mental Wellness Chatbot
+elif option == "Mental Wellness Bot":
+    st.header("🧘 AI-Powered Mental Wellness Bot")
+    st.write("Chat with AI for stress-relief recommendations!")
+    user_input = st.text_input("How are you feeling today?")
+    if st.button("Get Recommendation"):
+        responses = [
+            "Try deep breathing exercises for relaxation.",
+            "Take a 5-minute break and listen to calming music.",
+            "Go for a short walk to clear your mind.",
+            "Practice gratitude journaling to boost your mood.",
+        ]
+        st.success(f"💡 Suggestion: {responses[datetime.now().second % len(responses)]}")
 
-    return gdp_df
-
-gdp_df = get_gdp_data()
-
-# -----------------------------------------------------------------------------
-# Draw the actual page
-
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
-
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
-
-# Add some spacing
-''
-''
-
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
-
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
-
-countries = gdp_df['Country Code'].unique()
-
-if not len(countries):
-    st.warning("Select at least one country")
-
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
-
-''
-''
-''
-
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
-
-st.header('GDP over time', divider='gray')
-
-''
-
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
-
-''
-''
-
-
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
-
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[first_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[last_year['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
-
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+st.sidebar.info("This app is open-source. Contribute on [GitHub](https://github.com/codewithEshaYoutube/GraniteFit-AI)!")
