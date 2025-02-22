@@ -1,81 +1,109 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 import time
-from datetime import datetime
+import cv2
+import mediapipe as mp
 
-# Load dummy dataset
-data = {
-    "Employee ID": [101, 102, 103, 104, 105],
-    "Name": ["Alice", "Bob", "Charlie", "David", "Emma"],
-    "Work Hours": [8, 7, 9, 6, 10],
-    "Breaks Taken": [2, 3, 1, 4, 2],
-    "Screen Time (hrs)": [6, 5, 7, 4, 8],
-    "Tasks Completed": [5, 6, 4, 7, 3],
-    "Stress Level": ["Low", "Medium", "High", "Low", "High"]
+# ✅ Set up the dashboard
+st.set_page_config(page_title="Employee Health Dashboard", layout="wide")
+st.title("📊 Employee Health & Workload Dashboard")
+
+# ✅ Generate Fake Data for One Employee
+employee_data = {
+    "Name": "Ashar Khan",
+    "Role": "Software Engineer",
+    "Age": 30,
+    "Workload Level": np.random.choice(["Easy", "Medium", "Difficult"]),
+    "Task Completion (%)": np.random.randint(50, 100),
+    "Stress Level (%)": np.random.randint(20, 80),
+    "Screen Time (Hours)": np.random.randint(4, 12),
+    "Health Score (%)": np.random.randint(60, 100)
 }
-df = pd.DataFrame(data)
 
-# App title
-st.title("GraniteFit AI 🏋️‍♂️🤖 - Employee Health & Wellness Dashboard")
+# ✅ Layout for better UI
+col1, col2 = st.columns([1, 2])
 
-# Sidebar Navigation
-st.sidebar.header("Navigation")
-option = st.sidebar.radio("Go to", ["Home", "Employee Dashboard", "Break Reminders", "Screen Time Tracker", "Task Prioritization", "Mental Wellness Bot"])
-
-# Employee Dashboard
-if option == "Employee Dashboard":
-    st.header("📊 Employee Health Dashboard")
-    selected_employee = st.selectbox("Select an Employee", df["Name"].unique())
-    emp_data = df[df["Name"] == selected_employee]
+with col1:
+    # ✅ Employee Profile
+    st.subheader("👤 Employee Profile")
+    st.image("https://via.placeholder.com/150", width=150)
+    st.write(f"**Name:** {employee_data['Name']}")
+    st.write(f"**Role:** {employee_data['Role']}")
+    st.write(f"**Age:** {employee_data['Age']}")
+    st.write(f"**Workload Level:** {employee_data['Workload Level']}")
     
-    st.write(emp_data)
-    
+with col2:
+    # ✅ Workload Level Pie Chart
+    st.subheader("📌 Workload Level")
+    workload_counts = {"Easy": 30, "Medium": 40, "Difficult": 30}
     fig, ax = plt.subplots()
-    ax.bar(emp_data.columns[2:6], emp_data.iloc[0, 2:6])
-    plt.xticks(rotation=45)
+    ax.pie(workload_counts.values(), labels=workload_counts.keys(), autopct='%1.1f%%', startangle=90, colors=["#66B2FF", "#FFCC99", "#FF6666"])
+    ax.axis("equal")
     st.pyplot(fig)
+    
+    # ✅ Task Completion Bar Chart
+    st.subheader("✅ Task Completion Progress")
+    st.progress(employee_data["Task Completion (%)"] / 100)
+    st.write(f"Current Task Completion: {employee_data['Task Completion (%)']}%")
 
-# 1️⃣ Break Reminders
-elif option == "Break Reminders":
-    st.header("⏰ Sitting Too Long? Get a Reminder!")
-    duration = st.number_input("Set work duration before a reminder (minutes)", min_value=10, max_value=120, value=60)
-    if st.button("Start Timer"):
-        st.success(f"Reminder set! You will be notified every {duration} minutes.")
-        time.sleep(duration * 60)
-        st.warning("Time to stand up, stretch, or drink some water! 💦")
+# ✅ Stress Level and Screen Time
+col3, col4 = st.columns(2)
 
-# 2️⃣ Screen Time Tracker
-elif option == "Screen Time Tracker":
-    st.header("👀 Screen Brightness & Time Tracker")
-    screen_time = st.number_input("Enter your daily screen time (hours)", min_value=1, max_value=16, value=6)
-    if screen_time > 8:
-        st.warning("⚠️ High screen time detected! Consider reducing screen exposure.")
-    st.success("Try the 20-20-20 rule: Every 20 minutes, look at something 20 feet away for 20 seconds.")
+with col3:
+    st.subheader("⚠ Stress Level")
+    st.metric(label="Stress Level (%)", value=employee_data["Stress Level (%)"])
 
-# 3️⃣ AI Task Prioritization
-elif option == "Task Prioritization":
-    st.header("⚖️ Work-Life Balance - AI Task Manager")
-    tasks = st.text_area("Enter your tasks (one per line)")
-    if st.button("Prioritize Tasks"):
-        task_list = tasks.split("\n")
-        sorted_tasks = sorted(task_list, key=len)
-        st.success("Here’s your optimized task order:")
-        for i, task in enumerate(sorted_tasks, 1):
-            st.write(f"{i}. {task}")
+with col4:
+    st.subheader("🖥 Screen Time Monitoring")
+    st.bar_chart([employee_data["Screen Time (Hours)"]])
+    st.write(f"Current Screen Time: {employee_data['Screen Time (Hours)']} hours")
 
-# 4️⃣ Mental Wellness Chatbot
-elif option == "Mental Wellness Bot":
-    st.header("🧘 AI-Powered Mental Wellness Bot")
-    st.write("Chat with AI for stress-relief recommendations!")
-    user_input = st.text_input("How are you feeling today?")
-    if st.button("Get Recommendation"):
-        responses = [
-            "Try deep breathing exercises for relaxation.",
-            "Take a 5-minute break and listen to calming music.",
-            "Go for a short walk to clear your mind.",
-            "Practice gratitude journaling to boost your mood.",
-        ]
-        st.success(f"💡 Suggestion: {responses[datetime.now().second % len(responses)]}")
+# ✅ Health Score Display
+st.subheader("💚 Overall Health Score")
+st.metric(label="Health Score (%)", value=employee_data["Health Score (%)"])
 
-st.sidebar.info("This app is open-source. Contribute on [GitHub](https://github.com/codewithEshaYoutube/GraniteFit-AI)!")
+# ✅ Reminder Section (Non-blocking)
+def show_reminder():
+    st.toast("⏰ Time for a break! Take water, do eye exercises, and stretch!")
+
+if st.button("Start Reminders"):
+    show_reminder()
+    st.write("🔔 Reminders activated! They will pop up periodically.")
+
+# ✅ Interactive Cat Game
+st.subheader("😺 Smiley Cat Game")
+mp_face_detection = mp.solutions.face_detection
+mp_drawing = mp.solutions.drawing_utils
+
+def face_detection_game():
+    cap = cv2.VideoCapture(0)
+    face_detector = mp_face_detection.FaceDetection()
+    st.write("🎮 Game Started: Move your face to jump over hurdles!")
+    stframe = st.empty()
+    
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+        
+        # Convert frame to RGB
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = face_detector.process(frame_rgb)
+        
+        if results.detections:
+            for detection in results.detections:
+                mp_drawing.draw_detection(frame, detection)
+                stframe.image(frame, channels="RGB")
+                st.write("😺 Jump!")  # Logic for jumping cat (to be implemented with animation)
+        
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    
+    cap.release()
+    cv2.destroyAllWindows()
+    st.write("🎮 Game Over")
+
+if st.button("Start Game"):
+    face_detection_game()
