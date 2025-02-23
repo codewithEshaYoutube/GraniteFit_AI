@@ -5,6 +5,7 @@ import numpy as np
 import time
 import cv2
 import mediapipe as mp
+from task import TaskMatcher
 
 # ✅ Set up the dashboard
 st.set_page_config(page_title="Employee Health Dashboard", layout="wide")
@@ -21,6 +22,24 @@ employee_data = {
     "Screen Time (Hours)": np.random.randint(4, 12),
     "Health Score (%)": np.random.randint(60, 100)
 }
+
+# ✅ Add Task Matching Section
+st.subheader("🔍 Task Matching System")
+task_matcher = TaskMatcher()
+
+if st.button("Find Best Task Match"):
+    text_input = "Improve employee productivity with AI-based suggestions."
+    st.write("🔄 Matching tasks... Please wait.")
+    
+    try:
+        matched_tasks = task_matcher.extract_tasks(text_input)
+        st.success("✅ Task Matching Complete!")
+        st.write("**Best Matched Tasks:**")
+        for task in matched_tasks:
+            st.write(f"- {task}")
+    except Exception as e:
+        st.error(f"❌ Task Matching Failed: {e}")
+
 
 # ✅ Layout for better UI
 col1, col2 = st.columns([1, 2])
