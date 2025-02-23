@@ -1,6 +1,7 @@
 import os
 import requests
 import logging
+import streamlit as st
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -64,35 +65,37 @@ class IBMAPIClient:
 
         return response.json()["choices"][0]["message"]["content"]
 
+# Streamlit UI
+st.title("Tech Employee Health AI Assistant")
+st.write("Get health and wellness advice tailored for tech employees!")
 
-class HealthRecommendationAgent:
-    """An AI agent that provides health and wellness recommendations."""
+# Initialize session state for chat messages
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {"role": "system", "content": "You are an AI health assistant specialized in providing health and wellness advice specifically for employees in the tech industry. Focus on ergonomics, mental well-being, posture, screen time management, and healthy work habits."}
+    ]
 
-    def __init__(self, api_client):
-        self.api_client = api_client
+# Display chat history
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-    def generate_health_recommendation(self):
-        """Generates a health-related recommendation based on user input."""
-        messages = [
-            {"role": "system", "content": "You are a health and wellness expert. Provide a short, practical health tip."},
-            {"role": "user", "content": "Suggest a quick exercise for someone working at a desk all day."}
-        ]
+# User input
+user_input = st.chat_input("Ask me anything about workplace health...")
 
-        return self.api_client.send_chat_request(messages)
+if user_input:
+    # Display user message
+    st.chat_message("user").markdown(user_input)
+    st.session_state.messages.append({"role": "user", "content": user_input})
 
-
-if __name__ == "__main__":
-    try:
-        # Initialize the API client
-        ibm_client = IBMAPIClient()
-        
-        # Create a health recommendation agent
-        health_agent = HealthRecommendationAgent(ibm_client)
-        
-        # Get a health tip
-        recommendation = health_agent.generate_health_recommendation()
-        
-        print("\nHealth Recommendation:\n", recommendation)
-
-    except Exception as e:
-        logging.error(f"Error occurred: {e}")
+    # Get response from IBM
+    with st.spinner("Thinking..."):
+        try:
+            ibm_client = IBMAPIClient()
+            assistant_reply = ibm_client.send_chat_request(st.session_state.messages)
+        except Exception as e:
+            assistant_reply = f"Error: {str(e)}"
+    
+    # Display assistant response
+    st.chat_message("assistant").markdown(assistant_reply)
+    st.session_state.messages.append({"role": "assistant", "content": assistant_reply})
