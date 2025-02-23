@@ -4,3 +4,4 @@ matplotlib
 numpy
 opencv-python-headless
 mediapipe
+PyPDF2
