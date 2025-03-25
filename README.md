@@ -1,4 +1,4 @@
- # GraniteFit AI 🏋️‍♂️🤖
+# GraniteFit AI 🏋️‍♂️🤖
 
 [Live Demo](https://granitefit-ai.streamlit.app/) 🌐  
 
