@@ -50,6 +50,17 @@ pip install -r requirements.txt
 ```bash
 streamlit run app.py
 ```
+
+
+## 🎯 Contributing
+GraniteFit AI is an **open-source project**! Feel free to contribute by **reporting issues**, **suggesting features**, or **submitting PRs**.
+
+📩 Connect with us on GitHub: [@codewithEshaYoutube](https://github.com/codewithEshaYoutube)
+
+---
+
+## 📜 License
+This project is licensed under the **MIT License**. Use it freely and help make workplace wellness smarter!
 ## 📁 Repository Structure
 
 ```text
@@ -64,13 +75,3 @@ streamlit run app.py
 ├── .gitignore               # Ignored files and directories
 └── README.md                # Project overview and usage instructions
 
-
-## 🎯 Contributing
-GraniteFit AI is an **open-source project**! Feel free to contribute by **reporting issues**, **suggesting features**, or **submitting PRs**.
-
-📩 Connect with us on GitHub: [@codewithEshaYoutube](https://github.com/codewithEshaYoutube)
-
----
-
-## 📜 License
-This project is licensed under the **MIT License**. Use it freely and help make workplace wellness smarter! 🚀
