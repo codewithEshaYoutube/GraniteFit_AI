@@ -50,7 +50,9 @@ pip install -r requirements.txt
 ```bash
 streamlit run app.py
 ```
-##Repository Structure
+## 📁 Repository Structure
+
+```text
 ├── .devcontainer/           # Development container configuration
 ├── .github/                 # GitHub workflows and community files
 ├── Assets/                  # Images and static assets (e.g., employee.png)
