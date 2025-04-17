@@ -50,8 +50,18 @@ pip install -r requirements.txt
 ```bash
 streamlit run app.py
 ```
+##Repository Structure
+├── .devcontainer/           # Development container configuration
+├── .github/                 # GitHub workflows and community files
+├── Assets/                  # Images and static assets (e.g., employee.png)
+├── data/                    # Dataset files or input resources
+├── health.py                # Backend logic for health-specific AI advice
+├── streamlit_app.py         # Main Streamlit app entry point
+├── requirements.txt         # Python dependencies
+├── LICENSE                  # Open-source license
+├── .gitignore               # Ignored files and directories
+└── README.md                # Project overview and usage instructions
 
----
 
 ## 🎯 Contributing
 GraniteFit AI is an **open-source project**! Feel free to contribute by **reporting issues**, **suggesting features**, or **submitting PRs**.
